@@ -28,3 +28,11 @@ Homestead.json
 .env.production
 .phpactor.json
 auth.json
+.idea
+
+# Logs
+*.log
+supervisord.log
+
+# Docker
+.dockerignore

@@ -1,0 +1,22 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "Running pre-commit checks..."
+
+# Run Laravel Pint
+echo "Running Laravel Pint..."
+docker-compose exec -T php composer lint
+if [ $? -ne 0 ]; then
+    echo "❌ Laravel Pint failed. Run 'make lint-fix' to fix issues."
+    exit 1
+fi
+
+# Run PHPStan
+echo "Running PHPStan..."
+docker-compose exec -T php composer analyse
+if [ $? -ne 0 ]; then
+    echo "❌ PHPStan failed. Fix the issues before committing."
+    exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"
