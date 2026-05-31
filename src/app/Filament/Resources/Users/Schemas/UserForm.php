@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Hash;
@@ -39,6 +40,11 @@ class UserForm
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->label('Telegram ID'),
+                        Toggle::make('is_active')
+                            ->label('Активен')
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->default(true),
                     ])
                     ->columns(2),
             ]);
