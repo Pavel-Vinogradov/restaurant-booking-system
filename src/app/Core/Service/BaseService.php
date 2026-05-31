@@ -3,6 +3,7 @@
 namespace App\Core\Service;
 
 use App\Core\DTO\BaseDTO;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -25,7 +26,7 @@ abstract class BaseService
      * @return mixed
      * @throws Throwable
      */
-    public function create(BaseDTO|array $data)
+    public function create(BaseDTO|array $data): Model
     {
         $dataArray = $data instanceof BaseDTO ? $data->toArray() : $data;
 
@@ -40,7 +41,7 @@ abstract class BaseService
      * @return mixed
      * @throws Throwable
      */
-    public function update(int $id, BaseDTO|array $data)
+    public function update(int $id, BaseDTO|array $data): Model
     {
         $dataArray = $data instanceof BaseDTO ? $data->toArray() : $data;
 
