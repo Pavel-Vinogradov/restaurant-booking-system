@@ -6,6 +6,7 @@ namespace App\Domain\User\Services;
 
 use App\Core\DTO\LoginDTO;
 use App\Core\DTO\RegisterDTO;
+use App\Domain\User\Exceptions\BlockedUserException;
 use App\Domain\User\Models\User;
 use App\Domain\User\Repositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
@@ -15,21 +16,23 @@ readonly class AuthService
 {
     public function __construct(
         private UserRepository $userRepository,
-    ) {
-    }
+    ) {}
 
+    /**
+     * @throws BlockedUserException
+     */
     public function login(LoginDTO $dto): array
     {
         $user = $this->userRepository->findByEmail($dto->email);
 
-        if (! $user || ! Hash::check($dto->password, $user->password)) {
+        if ($user === null || ! Hash::check($dto->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.invalid_credentials')],
             ]);
         }
 
         if (! $user->is_active) {
-            throw new \Exception('User is blocked.', 403);
+            throw new BlockedUserException;
         }
 
         $token = $user->createToken('api')->plainTextToken;
@@ -59,13 +62,9 @@ readonly class AuthService
         ];
     }
 
-    public function me(User $user): User
-    {
-        return $user;
-    }
-
     public function logout(User $user): void
     {
-        $user->currentAccessToken()->delete();
+        /** @phpstan-ignore-next-line */
+        $user->tokens()->delete();
     }
 }

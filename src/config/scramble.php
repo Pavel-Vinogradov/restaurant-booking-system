@@ -1,6 +1,7 @@
 <?php
 
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
+use Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy;
 
 return [
     /*
@@ -168,7 +169,7 @@ return [
      * ],
      */
     'security_strategy' => [
-        \Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy::class,
+        MiddlewareAuthSecurityStrategy::class,
         [
             'middleware' => ['auth', 'auth:sanctum'],
         ],

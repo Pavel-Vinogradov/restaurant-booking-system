@@ -11,10 +11,10 @@ interface PaginateRepositoryInterface
     /**
      * Метод для пагинации с сортировкой.
      *
-     * @param int $perPage Количество элементов на странице.
-     * @param int $currentPage Номер текущей страницы.
-     * @param string|null $sortBy Поле, по которому нужно сортировать (по умолчанию null).
-     * @param string $sortOrder Порядок сортировки (по умолчанию 'asc').
+     * @param  int  $perPage  Количество элементов на странице.
+     * @param  int  $currentPage  Номер текущей страницы.
+     * @param  string|null  $sortBy  Поле, по которому нужно сортировать (по умолчанию null).
+     * @param  string  $sortOrder  Порядок сортировки (по умолчанию 'asc').
      */
     public function paginate(
         int $perPage = 20,

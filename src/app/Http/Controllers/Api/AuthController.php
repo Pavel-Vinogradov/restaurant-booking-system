@@ -9,6 +9,7 @@ use App\Core\DTO\RegisterDTO;
 use App\Core\Request\Auth\LoginRequest;
 use App\Core\Request\Auth\RegisterRequest;
 use App\Core\Response\ApiResponse;
+use App\Domain\User\Exceptions\BlockedUserException;
 use App\Domain\User\Resources\UserResource;
 use App\Domain\User\Services\AuthService;
 use App\Http\Controllers\Controller;
@@ -21,15 +22,13 @@ class AuthController extends Controller
 {
     public function __construct(
         private readonly AuthService $authService,
-    ) {
-    }
+    ) {}
 
     /**
      * Авторизация пользователя и получение токена доступа.
      *
      * @throws UnknownProperties
      * @throws ValidationException
-     * @throws \Exception
      */
     public function login(LoginRequest $request): JsonResponse
     {
@@ -37,11 +36,8 @@ class AuthController extends Controller
 
         try {
             $result = $this->authService->login($dto);
-        } catch (\Exception $e) {
-            if ($e->getCode() === 403) {
-                return ApiResponse::forbidden($e->getMessage());
-            }
-            throw $e;
+        } catch (BlockedUserException $e) {
+            return ApiResponse::forbidden($e->getMessage());
         }
 
         return ApiResponse::success([

@@ -22,8 +22,6 @@ abstract class BaseService
     }
 
     /**
-     * @param BaseDTO|array $data
-     * @return mixed
      * @throws Throwable
      */
     public function create(BaseDTO|array $data): Model
@@ -36,9 +34,6 @@ abstract class BaseService
     }
 
     /**
-     * @param int $id
-     * @param BaseDTO|array $data
-     * @return mixed
      * @throws Throwable
      */
     public function update(int $id, BaseDTO|array $data): Model

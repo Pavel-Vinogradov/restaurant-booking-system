@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Core\Repository;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 
 /**
  * @template TModel of Model
@@ -28,12 +28,12 @@ abstract class BaseRepository
     /**
      * @return TModel|null
      */
-    final public function findById(int $modelId): ?Model
+    public function findById(int $modelId): ?Model
     {
         return $this->query()->find($modelId);
     }
 
-    final public function create(array $attributes): ?Model
+    public function create(array $attributes): ?Model
     {
         return $this->query()->create($attributes);
     }
@@ -41,11 +41,11 @@ abstract class BaseRepository
     /**
      * @return TModel|null
      */
-    final public function update(int $modelId, array $attributes): ?Model
+    public function update(int $modelId, array $attributes): ?Model
     {
         $model = $this->findById($modelId);
 
-        if (! $model) {
+        if ($model === null) {
             return null;
         }
 
@@ -57,10 +57,11 @@ abstract class BaseRepository
     /**
      * @return Collection<int, TModel>
      */
-    final public function getAll(
+    public function getAll(
         array $columns = ['*'],
         array $relations = []
     ): Collection {
+        /** @phpstan-ignore return.type */
         return $this->query()
             ->with($relations)
             ->get($columns);
@@ -70,7 +71,7 @@ abstract class BaseRepository
     {
         $model = $this->findById($modelId);
 
-        if (! $model) {
+        if ($model === null) {
             return false;
         }
 
@@ -82,6 +83,7 @@ abstract class BaseRepository
      */
     protected function query(): Builder
     {
+        /** @phpstan-ignore return.type */
         return $this->model->newQuery();
     }
 }
