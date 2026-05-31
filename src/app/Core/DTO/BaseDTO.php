@@ -2,7 +2,8 @@
 
 namespace App\Core\DTO;
 
-interface BaseDTO
+use Tizix\DataTransferObject\DataTransferObject;
+
+abstract class BaseDTO extends DataTransferObject
 {
-    public function toArray(): array;
 }

@@ -50,7 +50,7 @@ return [
         /*
          * Define the title of the documentation's website. App name is used when this config is `null`.
          */
-        'title' => null,
+        'title' => 'Restaurant Booking API',
 
         /*
          * Define the theme of the documentation. Available options are `light`, `dark`, and `system`.
@@ -167,6 +167,10 @@ return [
      *     ],
      * ],
      */
-    // 'security_strategy' => \Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy::class,
-    'security_strategy' => null,
+    'security_strategy' => [
+        \Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy::class,
+        [
+            'middleware' => ['auth', 'auth:sanctum'],
+        ],
+    ],
 ];

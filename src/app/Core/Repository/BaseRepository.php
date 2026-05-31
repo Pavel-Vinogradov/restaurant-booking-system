@@ -18,12 +18,11 @@ abstract class BaseRepository
      */
     protected Model $model;
 
-    /**
-     * @param TModel $model
-     */
-    public function __construct(Model $model)
+    abstract protected function getModel(): string;
+
+    public function __construct()
     {
-        $this->model = $model;
+        $this->model = app($this->getModel());
     }
 
     /**
