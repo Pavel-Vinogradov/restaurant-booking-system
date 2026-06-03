@@ -7,20 +7,27 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "dedoc/scramble": "^0.13.24",
+        "filament/filament": "^5.0",
         "laravel/framework": "^13.8",
-        "laravel/tinker": "^3.0"
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^3.0",
+        "league/flysystem-aws-s3-v3": "^3.0",
+        "spatie/laravel-permission": "^6.0",
+        "tizix/data-transfer-object": "dev-master"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
         "larastan/larastan": "^3.0",
+        "laravel-lang/common": "^6.8",
         "laravel/pail": "^1.2.5",
         "laravel/pao": "^1.0.6",
         "laravel/pint": "^1.27",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "phpmd/phpmd": "^2.15",
-        "phpstan/phpstan": "^2.0",
         "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.0",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
         "phpunit/phpunit": "^12.5.12"
@@ -73,7 +80,8 @@
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
@@ -103,6 +111,9 @@
             "pestphp/pest-plugin": true,
             "php-http/discovery": true,
             "phpstan/extension-installer": true
+        },
+        "platform": {
+            "ext-intl": "1.0"
         }
     },
     "minimum-stability": "stable",

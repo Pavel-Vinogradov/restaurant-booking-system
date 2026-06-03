@@ -1,0 +1,106 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Copy .env
+      run: cp .env.example .env 2>/dev/null || cp .env .env
+
+    - name: Start Docker services
+      run: docker-compose up -d postgres redis
+
+    - name: Build PHP image
+      run: docker-compose build php
+
+    - name: Install dependencies
+      run: docker-compose run --rm composer install --no-interaction --prefer-dist
+
+    - name: Generate application key
+      run: docker-compose run --rm php php artisan key:generate
+
+    - name: Run migrations
+      run: docker-compose run --rm php php artisan migrate --force
+      env:
+        DB_HOST: postgres
+        DB_PORT: 5432
+
+    - name: Run Laravel Pint (Lint)
+      run: docker-compose run --rm php composer lint
+
+    - name: Run PHPStan (Static Analysis)
+      run: docker-compose run --rm php composer analyse
+
+    - name: Run tests
+      run: docker-compose run --rm php composer test
+
+  deploy:
+    name: Deploy to Production
+    needs: quality-checks
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Add known host
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -H 139.100.224.56 >> ~/.ssh/known_hosts
+
+    - name: Deploy to server
+      run: |
+        ssh ${{ secrets.SSH_USER }}@139.100.224.56 << 'EOF'
+          set -e
+          cd /var/www/restaurant-booking || exit 1
+          
+          # Pull latest changes
+          git pull origin $(git rev-parse --abbrev-ref HEAD)
+          
+          # Build and restart containers
+          docker-compose down
+          docker-compose build --no-cache
+          docker-compose up -d
+          
+          # Install dependencies
+          docker-compose run --rm composer install --no-interaction --prefer-dist --optimize-autoloader
+          
+          # Run migrations
+          docker-compose exec -T php php artisan migrate --force
+          
+          # Clear caches
+          docker-compose exec -T php php artisan cache:clear
+          docker-compose exec -T php php artisan config:clear
+          docker-compose exec -T php php artisan route:clear
+          docker-compose exec -T php php artisan view:clear
+          
+          # Optimize
+          docker-compose exec -T php php artisan config:cache
+          docker-compose exec -T php php artisan route:cache
+          docker-compose exec -T php php artisan view:cache
+          
+          echo "Deployment completed successfully!"
+        EOF
+
+    - name: Notify on success
+      if: success()
+      run: echo "✅ Deployment to 139.100.224.56 successful!"
+
+    - name: Notify on failure
+      if: failure()
+      run: echo "❌ Deployment failed"

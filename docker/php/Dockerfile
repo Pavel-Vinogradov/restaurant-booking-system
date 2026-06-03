@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
         zip \
         pcntl \
         bcmath \
+    && docker-php-ext-enable intl \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pecl install redis \
