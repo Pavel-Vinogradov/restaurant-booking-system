@@ -9,6 +9,7 @@ use App\Core\DTO\RegisterDTO;
 use App\Domain\User\Exceptions\BlockedUserException;
 use App\Domain\User\Models\User;
 use App\Domain\User\Repositories\UserRepository;
+use App\Core\Support\PhoneNormalizer;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -23,11 +24,11 @@ readonly class AuthService
      */
     public function login(LoginDTO $dto): array
     {
-        $user = $this->userRepository->findByEmail($dto->email);
+        $user = $this->userRepository->findByEmailOrPhone($dto->login);
 
         if ($user === null || ! Hash::check($dto->password, $user->password)) {
             throw ValidationException::withMessages([
-                'email' => [__('auth.invalid_credentials')],
+                'login' => [__('auth.invalid_credentials')],
             ]);
         }
 
@@ -49,7 +50,7 @@ readonly class AuthService
             'name' => $dto->name,
             'email' => $dto->email,
             'password' => Hash::make($dto->password),
-            'phone' => $dto->phone,
+            'phone' => PhoneNormalizer::normalize($dto->phone),
             'telegram_id' => $dto->telegram_id,
             'is_active' => true,
         ]);

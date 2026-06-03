@@ -6,17 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::table('users', static function (Blueprint $table) {
-            $table->boolean('is_active')->default(true)->after('telegram_id')->comment('Активен ли пользователь');
+            $table->unique('phone');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('users', static function (Blueprint $table) {
-            $table->dropColumn('is_active');
+            $table->dropUnique(['phone']);
         });
     }
 };

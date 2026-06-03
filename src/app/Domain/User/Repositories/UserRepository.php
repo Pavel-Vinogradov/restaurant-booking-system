@@ -23,4 +23,12 @@ class UserRepository extends BaseRepository
     {
         return $this->query()->where('email', $email)->first();
     }
+
+    public function findByEmailOrPhone(string $login): ?User
+    {
+        return $this->query()
+            ->where('email', $login)
+            ->orWhere('phone', $login)
+            ->first();
+    }
 }

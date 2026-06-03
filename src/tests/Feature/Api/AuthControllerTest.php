@@ -22,7 +22,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response = $this->postJson('/api/auth/login', [
-            'email' => 'test@example.com',
+            'login' => 'test@example.com',
             'password' => 'password123',
         ]);
 
@@ -59,12 +59,12 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response = $this->postJson('/api/auth/login', [
-            'email' => 'test@example.com',
+            'login' => 'test@example.com',
             'password' => 'wrongpassword',
         ]);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['email']);
+            ->assertJsonValidationErrors(['login']);
     }
 
     public function test_login_inactive_user(): void
@@ -76,7 +76,7 @@ class AuthControllerTest extends TestCase
         ]);
 
         $response = $this->postJson('/api/auth/login', [
-            'email' => 'inactive@example.com',
+            'login' => 'inactive@example.com',
             'password' => 'password123',
         ]);
 
@@ -161,6 +161,103 @@ class AuthControllerTest extends TestCase
                     'email' => 'me@example.com',
                 ],
             ]);
+    }
+
+    public function test_login_by_phone_success(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'phone@example.com',
+            'phone' => '+79991234567',
+            'password' => Hash::make('password123'),
+            'is_active' => true,
+        ]);
+
+        $response = $this->postJson('/api/auth/login', [
+            'login' => '+7 (999) 123-45-67',
+            'password' => 'password123',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'user' => [
+                        'email' => 'phone@example.com',
+                        'phone' => '+79991234567',
+                    ],
+                ],
+            ]);
+    }
+
+    public function test_login_by_phone_with_eight_prefix(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'phone8@example.com',
+            'phone' => '+79991234567',
+            'password' => Hash::make('password123'),
+            'is_active' => true,
+        ]);
+
+        $response = $this->postJson('/api/auth/login', [
+            'login' => '8 (999) 123-45-67',
+            'password' => 'password123',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'user' => [
+                        'email' => 'phone8@example.com',
+                        'phone' => '+79991234567',
+                    ],
+                ],
+            ]);
+    }
+
+    public function test_register_phone_normalization(): void
+    {
+        $response = $this->postJson('/api/auth/register', [
+            'name' => 'Петр Петров',
+            'email' => 'petr@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'phone' => '8 999 123 45 67',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'user' => [
+                        'phone' => '+79991234567',
+                    ],
+                ],
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'petr@example.com',
+            'phone' => '+79991234567',
+        ]);
+    }
+
+    public function test_register_duplicate_phone_validation_error(): void
+    {
+        User::factory()->create([
+            'email' => 'first@example.com',
+            'phone' => '+79991234567',
+        ]);
+
+        $response = $this->postJson('/api/auth/register', [
+            'name' => 'Второй',
+            'email' => 'second@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'phone' => '+7 (999) 123-45-67',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['phone']);
     }
 
     public function test_me_unauthorized(): void

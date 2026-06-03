@@ -6,7 +6,7 @@ namespace App\Core\DTO;
 
 final class LoginDTO extends BaseDTO
 {
-    public string $email;
+    public string $login;
 
     public string $password;
 }
