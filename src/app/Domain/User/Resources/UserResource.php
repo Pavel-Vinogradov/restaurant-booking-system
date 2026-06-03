@@ -28,6 +28,7 @@ final class UserResource extends JsonResource
             'telegram_id' => $this->telegram_id,
             'is_active' => $this->is_active,
             'email_verified_at' => $this->email_verified_at?->toDateTimeString(),
+            'phone_verified_at' => $this->phone_verified_at?->toDateTimeString(),
             'created_at' => $this->created_at?->toDateTimeString(),
         ];
     }

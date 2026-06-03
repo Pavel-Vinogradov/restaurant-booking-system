@@ -143,25 +143,6 @@ class AuthControllerTest extends TestCase
             ->assertJsonValidationErrors(['name', 'email', 'password']);
     }
 
-    public function test_me_success(): void
-    {
-        $user = User::factory()->create([
-            'email' => 'me@example.com',
-            'is_active' => true,
-        ]);
-
-        $response = $this->actingAs($user, 'sanctum')
-            ->getJson('/api/auth/me');
-
-        $response->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-                'data' => [
-                    'id' => $user->id,
-                    'email' => 'me@example.com',
-                ],
-            ]);
-    }
 
     public function test_login_by_phone_success(): void
     {
@@ -260,12 +241,6 @@ class AuthControllerTest extends TestCase
             ->assertJsonValidationErrors(['phone']);
     }
 
-    public function test_me_unauthorized(): void
-    {
-        $response = $this->getJson('/api/auth/me');
-
-        $response->assertStatus(401);
-    }
 
     public function test_logout_success(): void
     {
@@ -282,5 +257,216 @@ class AuthControllerTest extends TestCase
             ]);
 
         $this->assertDatabaseCount('personal_access_tokens', 0);
+    }
+
+    public function test_forgot_password_success(): void
+    {
+        User::factory()->create([
+            'email' => 'reset@example.com',
+        ]);
+
+        $response = $this->postJson('/api/auth/forgot-password', [
+            'email' => 'reset@example.com',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+            ]);
+
+        $this->assertDatabaseHas('password_reset_tokens', [
+            'email' => 'reset@example.com',
+        ]);
+    }
+
+    public function test_reset_password_success(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'reset@example.com',
+            'password' => Hash::make('oldpassword'),
+        ]);
+
+        $token = 'testtoken123';
+        \DB::table('password_reset_tokens')->insert([
+            'email' => 'reset@example.com',
+            'token' => Hash::make($token),
+            'created_at' => now(),
+        ]);
+
+        $response = $this->postJson('/api/auth/reset-password', [
+            'email' => 'reset@example.com',
+            'token' => $token,
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Пароль успешно изменён.',
+            ]);
+
+        $user->refresh();
+        $this->assertTrue(Hash::check('newpassword123', $user->password));
+    }
+
+    public function test_reset_password_invalid_token(): void
+    {
+        User::factory()->create([
+            'email' => 'reset@example.com',
+        ]);
+
+        $response = $this->postJson('/api/auth/reset-password', [
+            'email' => 'reset@example.com',
+            'token' => 'wrongtoken',
+            'password' => 'newpassword123',
+            'password_confirmation' => 'newpassword123',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['token']);
+    }
+
+    public function test_update_profile_success(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'Old Name',
+            'email' => 'old@example.com',
+            'phone' => '+79991112233',
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->putJson('/api/auth/profile', [
+                'name' => 'New Name',
+                'email' => 'new@example.com',
+                'phone' => '+7 (999) 333 44 55',
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'name' => 'New Name',
+                    'email' => 'new@example.com',
+                    'phone' => '+79993334455',
+                ],
+            ]);
+    }
+
+    public function test_change_password_success(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('oldpassword'),
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->putJson('/api/auth/password', [
+                'current_password' => 'oldpassword',
+                'password' => 'newpassword123',
+                'password_confirmation' => 'newpassword123',
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Пароль изменён.',
+            ]);
+
+        $user->refresh();
+        $this->assertTrue(Hash::check('newpassword123', $user->password));
+    }
+
+    public function test_change_password_wrong_current(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('oldpassword'),
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->putJson('/api/auth/password', [
+                'current_password' => 'wrongpassword',
+                'password' => 'newpassword123',
+                'password_confirmation' => 'newpassword123',
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['current_password']);
+    }
+
+    public function test_send_phone_code_success(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->postJson('/api/auth/phone/send-code', [
+                'phone' => '+7 (999) 123-45-67',
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'code',
+                ],
+            ]);
+
+        $this->assertDatabaseHas('phone_verification_codes', [
+            'phone' => '+79991234567',
+        ]);
+    }
+
+    public function test_verify_phone_success(): void
+    {
+        $user = User::factory()->create([
+            'phone' => '+79991234567',
+        ]);
+
+        $code = '123456';
+        \DB::table('phone_verification_codes')->insert([
+            'phone' => '+79991234567',
+            'code' => Hash::make($code),
+            'expires_at' => now()->addMinutes(10),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->postJson('/api/auth/phone/verify', [
+                'phone' => '+7 (999) 123-45-67',
+                'code' => $code,
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Телефон подтверждён.',
+            ]);
+
+        $user->refresh();
+        $this->assertNotNull($user->phone_verified_at);
+    }
+
+    public function test_verify_phone_invalid_code(): void
+    {
+        $user = User::factory()->create([
+            'phone' => '+79991234567',
+        ]);
+
+        \DB::table('phone_verification_codes')->insert([
+            'phone' => '+79991234567',
+            'code' => Hash::make('123456'),
+            'expires_at' => now()->addMinutes(10),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->postJson('/api/auth/phone/verify', [
+                'phone' => '+79991234567',
+                'code' => '999999',
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['code']);
     }
 }

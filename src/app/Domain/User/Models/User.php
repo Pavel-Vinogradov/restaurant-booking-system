@@ -22,9 +22,10 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $telegram_id
  * @property bool $is_active
  * @property Carbon|null $email_verified_at
+ * @property Carbon|null $phone_verified_at
  * @property string|null $remember_token
  */
-#[Fillable(['name', 'email', 'password', 'phone', 'telegram_id', 'is_active'])]
+#[Fillable(['name', 'email', 'password', 'phone', 'telegram_id', 'is_active', 'phone_verified_at'])]
 #[Hidden(['password', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
 class User extends Authenticatable
@@ -41,6 +42,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
             'is_active' => 'boolean',
             'password' => 'hashed',
         ];
