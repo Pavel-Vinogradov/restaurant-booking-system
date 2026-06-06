@@ -143,7 +143,6 @@ class AuthControllerTest extends TestCase
             ->assertJsonValidationErrors(['name', 'email', 'password']);
     }
 
-
     public function test_login_by_phone_success(): void
     {
         $user = User::factory()->create([
@@ -240,7 +239,6 @@ class AuthControllerTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['phone']);
     }
-
 
     public function test_logout_success(): void
     {

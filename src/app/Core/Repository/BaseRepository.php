@@ -16,7 +16,7 @@ abstract class BaseRepository
     /**
      * @var TModel
      */
-    protected Model $model;
+    protected mixed $model;
 
     abstract protected function getModel(): string;
 
@@ -83,7 +83,9 @@ abstract class BaseRepository
      */
     protected function query(): Builder
     {
-        /** @phpstan-ignore return.type */
-        return $this->model->newQuery();
+        /** @phpstan-var Builder<TModel> $query */
+        $query = $this->model->newQuery();
+
+        return $query;
     }
 }

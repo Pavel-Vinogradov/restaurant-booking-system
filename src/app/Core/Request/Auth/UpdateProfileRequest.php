@@ -6,6 +6,7 @@ namespace App\Core\Request\Auth;
 
 use App\Core\Request\ApiRequest;
 use App\Core\Support\PhoneNormalizer;
+use App\Domain\User\Models\User;
 
 /**
  * @property string $name Имя пользователя
@@ -25,13 +26,13 @@ final class UpdateProfileRequest extends ApiRequest
 
     public function rules(): array
     {
-        /** @var \App\Domain\User\Models\User $user */
+        /** @var User $user */
         $user = $this->user();
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'phone' => ['nullable', 'string', 'max:255', 'unique:users,phone,' . $user->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'phone' => ['nullable', 'string', 'max:255', 'unique:users,phone,'.$user->id],
         ];
     }
 }

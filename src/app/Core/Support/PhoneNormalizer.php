@@ -15,11 +15,11 @@ final class PhoneNormalizer
         $digits = preg_replace('/\D/', '', $phone);
 
         if (strlen($digits) === 11 && $digits[0] === '8') {
-            $digits = '7' . substr($digits, 1);
+            $digits = '7'.substr($digits, 1);
         }
 
         if (strlen($digits) === 11 && $digits[0] === '7') {
-            $digits = '+' . $digits;
+            $digits = '+'.$digits;
         }
 
         return $digits;

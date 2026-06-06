@@ -96,6 +96,9 @@ class AuthController extends Controller
 
     /**
      * Отправить ссылку для сброса пароля.
+     *
+     * @throws UnknownProperties
+     * @throws ValidationException
      */
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
@@ -108,6 +111,9 @@ class AuthController extends Controller
 
     /**
      * Сбросить пароль по токену.
+     *
+     * @throws UnknownProperties
+     * @throws ValidationException
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
@@ -120,6 +126,9 @@ class AuthController extends Controller
 
     /**
      * Обновить профиль пользователя.
+     *
+     * @throws UnknownProperties
+     * @throws ValidationException
      */
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
@@ -132,6 +141,9 @@ class AuthController extends Controller
 
     /**
      * Сменить пароль.
+     *
+     * @throws UnknownProperties
+     * @throws ValidationException
      */
     public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
@@ -144,6 +156,9 @@ class AuthController extends Controller
 
     /**
      * Отправить SMS-код для верификации телефона.
+     *
+     * @throws UnknownProperties
+     * @throws ValidationException
      */
     public function sendPhoneCode(SendPhoneCodeRequest $request): JsonResponse
     {
@@ -158,6 +173,9 @@ class AuthController extends Controller
 
     /**
      * Подтвердить телефон по коду.
+     *
+     * @throws UnknownProperties
+     * @throws ValidationException
      */
     public function verifyPhone(VerifyPhoneRequest $request): JsonResponse
     {
