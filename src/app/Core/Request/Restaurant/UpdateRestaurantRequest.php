@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Request\Restaurant;
 
 use App\Core\Request\ApiRequest;
+use App\Domain\Restaurant\Models\Restaurant;
 
 /**
  * @property string|null $name Название ресторана
@@ -16,6 +17,18 @@ use App\Core\Request\ApiRequest;
  */
 final class UpdateRestaurantRequest extends ApiRequest
 {
+    public function authorize(): bool
+    {
+        $restaurantId = $this->route('restaurant');
+        $restaurant = Restaurant::find($restaurantId);
+
+        if ($restaurant === null) {
+            return false;
+        }
+
+        return $this->user()->can('update', $restaurant);
+    }
+
     public function rules(): array
     {
         return [

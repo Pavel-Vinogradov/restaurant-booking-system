@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\RestaurantController;
+use App\Http\Controllers\Api\TableController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -20,4 +21,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Restaurant routes
     Route::apiResource('restaurants', RestaurantController::class);
+
+    // Table routes
+    Route::get('/restaurants/{restaurant_id}/tables', [TableController::class, 'index']);
+    Route::apiResource('tables', TableController::class);
 });

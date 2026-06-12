@@ -90,9 +90,7 @@ class RestaurantController extends Controller
             return ApiResponse::notFound('Ресторан не найден.');
         }
 
-        if (! $this->restaurantService->userHasAccess($restaurantId, $request->user()->id)) {
-            return ApiResponse::forbidden('У вас нет доступа к этому ресторану.');
-        }
+        $this->authorize('view', $restaurant);
 
         return ApiResponse::success(
             new RestaurantResource($restaurant)
@@ -114,10 +112,6 @@ class RestaurantController extends Controller
             return ApiResponse::notFound('Ресторан не найден.');
         }
 
-        if (! $this->restaurantService->userHasAccess($restaurantId, $request->user()->id)) {
-            return ApiResponse::forbidden('У вас нет доступа к этому ресторану.');
-        }
-
         $dto = new UpdateRestaurantDTO($request->validated());
 
         $restaurant = $this->restaurantService->updateWithHours($restaurantId, $dto);
@@ -135,13 +129,13 @@ class RestaurantController extends Controller
     {
         $restaurantId = (int) $id;
 
-        if (! $this->restaurantService->exists($restaurantId)) {
+        $restaurant = $this->restaurantService->findById($restaurantId);
+
+        if ($restaurant === null) {
             return ApiResponse::notFound('Ресторан не найден.');
         }
 
-        if (! $this->restaurantService->userHasAccess($restaurantId, $request->user()->id)) {
-            return ApiResponse::forbidden('У вас нет доступа к этому ресторану.');
-        }
+        $this->authorize('delete', $restaurant);
 
         $this->restaurantService->delete($restaurantId);
 
